@@ -38,7 +38,7 @@ class Decoder
 			krsort($this->list);
 			foreach($this->list as $time => $payload)
 			{
-				$this->htmllist .= '<a href="?hash='.$payload->hash.'" title="'.html_entities($payload->origin).'">'.$payload->timestamp.'</a><br/>';
+				$this->htmllist .= '<a href="?hash='.$payload->hash.'" title="'.htmlentities($payload->origin).'">'.$payload->timestamp.'</a><br/>';
 			}
 		}
 	}
