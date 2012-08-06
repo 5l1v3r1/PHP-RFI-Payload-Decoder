@@ -180,7 +180,6 @@ class Decoder
 							$done = false;
 							array_push($variables, $name);
 							$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str);
-							$steps .= "Replacing $name with $value\n";
 						}
 					}
 				}
@@ -200,7 +199,6 @@ class Decoder
 							$done = false;
 							array_push($variables, $name);
 							$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str);
-							$steps .= "Replacing $name with $value\n";
 						}
 					}
 				}

@@ -15,6 +15,8 @@ else if(isset($_POST['url']) && !empty($_POST['url']))
 {
 	$payload = $decoder->DecodeFromUrl($_POST['url']);
 }
+$decoded = "";
+$original = "";
 $details = "";
 if($payload === false)
 {
