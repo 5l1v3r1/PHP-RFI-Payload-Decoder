@@ -1,8 +1,9 @@
 <html>
 <head></head>
 <body>
-<p><a href="index.php"><h1>Submit bot to be decoded</h1></a></p>
-</p>
+<p><a href="https://www.firebwall.com/decoding/index.php"><h1>Submit bot to be decoded</h1></a></p>
+<p><a href="https://github.com/bwall/PHP-RFI-Payload-Decoder">Source Code</a></p>
+<p><a href="http://ballastsec.blogspot.com/2012/07/anti-bot-vulnerability-search.html">Bot Net Analysis</a>  The analysis is light at this point, but does include the configurations to various bots seen.</p>
 <?php
 /*
  * Generates a name for a bot dump
@@ -97,9 +98,9 @@ function PrintList()
     		while (false !== ($entry = readdir($handle)))
     		{
         		if ($entry != "." && $entry != "..")
-			{
-				$ctime = strtotime(GetTimestamp($entry));
-				$list[$ctime] = $entry;
+				{
+					$ctime = strtotime(GetTimestamp($entry));
+					$list[$ctime] = $entry;
         		}
     		}
     		closedir($handle);

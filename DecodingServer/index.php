@@ -30,6 +30,11 @@ function RemoveComments($str)
 		{
                     $str = str_replace($matches[0], "", $str);
 		}
+		//else if(preg_match('/\/\/.*\n/m', $str, $matches))
+		//{
+                        //Causing issues in some base64
+			//$str = str_replace($matches[0], "", $str);
+		//}
 		else
 		{
 			$done = true;
@@ -184,15 +189,15 @@ function AutoDecode(&$str, &$steps)
                 for($i = 0; $i < $count; $i++)
                 {
                     $name = $matches[1][$i];
-					if(in_array($name, $variables) === true)
-					{
-						continue;
-					}
+		    if(in_array($name, $variables) === true)
+		    {
+			continue;
+		    }
                     $value = $matches[2][$i];
                     if($str !== preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str) && strstr($value, $name) === false)
                     {
                         $done = false;
-						array_push($variables, $name);
+			array_push($variables, $name);
                         $str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str);
                         $steps .= "Replacing $name with $value\n";                        
                     }                    
@@ -212,7 +217,7 @@ function AutoDecode(&$str, &$steps)
                     if($str !== preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str) && strstr($value, $name) === false)
                     {
                         $done = false;
-						array_push($variables, $name);
+			array_push($variables, $name);
                         $str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str);
                         $steps .= "Replacing $name with $value\n";                        
                     }                    
@@ -234,9 +239,10 @@ if(isset($_POST['input']) && !empty($_POST['input']) && !(isset($_POST['url']) &
     if($file !== false)
     {
         $toFile = "Timestamp: ".strftime('%c')."\n";
+	$toFile .= "Submitter: ".exec("htdeny ".$_SERVER['REMOTE_ADDR'])."\n";
         $toFile .= "Was decoded from text on server.\n\n";
         $toFile .= "Shell -> ".base64_encode($str)."\n\n";
-		$toFile .= "Raw -> ".base64_encode($raw)."\n\n";
+	$toFile .= "Raw -> ".base64_encode($raw)."\n\n";
         file_put_contents($file, $toFile);
     }
 }
@@ -245,23 +251,20 @@ else if(isset($_POST['url']) && !empty($_POST['url']))
     $file = GetFileName($_POST['url'], ".DecodedByUrl");
     if($file !== false)
     {
-        $fileSize = RemoteFileSize($_POST['url']);
-        if($fileSize !== false && $fileSize < (1024 * 1024  * 16))
-        {
-            $str = file_get_contents($_POST['url'], false);
-			$raw = $str;
-			if($str !== false)
-			{
+            $str = file_get_contents($_POST['url'], false, null, 0, 1024 * 1024 * 16);
+	    $raw = $str;
+	    if($str !== false)
+	    {
             	AutoDecode($str, $steps);
             	$toFile = "Timestamp: ".strftime('%c')."\n";
+				$toFile .= "Submitter: ".$_SERVER['REMOTE_ADDR']."\n";
             	$toFile .= "URL: ".$_POST['url']."\n";
             	$toFile .= "Was decoded from url on server.\n\n";
             	$toFile .= "Shell -> ".base64_encode($str)."\n\n";
 				$toFile .= "Raw -> ".base64_encode($raw)."\n\n";
             	file_put_contents($file, $toFile);
-			$meta = "<META HTTP-EQUIV=REFRESH CONTENT=\"1; URL=".GetUrl($_POST['url'])."\">";
-			}
-        }
+				$meta = "<META HTTP-EQUIV=REFRESH CONTENT=\"1; URL=".GetUrl($_POST['url'])."\">";
+	    }
     }
     else
     {
@@ -274,12 +277,12 @@ $meta
 <body>
 <form action=\"\" method=\"post\">
 <table width=\"100%\" height=\"100%\" border=\"1\"><tr><td colspan=\"2\">
-<h1>PHP Decoder</h1><a href=\"https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KCHYQRCBZEWML\">Donate</a></td></tr><tr valign=\"top\">
+<h1>PHP Decoder</h1><a href=\"https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KCHYQRCBZEWML\">Donate</a><br/> <a href='https://github.com/bwall/PHP-RFI-Payload-Decoder'>Source</a></td></tr><tr valign=\"top\">
 <td style=\"width:100px;text-align:top;\"><b>Tools</b><br />
 <br />URL: <input type=\"text\" name=\"url\" />
 <br /><input type=\"submit\" value=\"Decode\" />
 <br />
-<p><a href=\"read.php\">Decoded Bots</a></p><br />
+<p><a href=\"https://www.firebwall.com/decoding/read.php\">Decoded Bots</a></p><br />
 </td>
 <td style=\"height:100%;text-align:top;\">
 <table width=\"99%\" border=\"0\">
@@ -290,7 +293,7 @@ $meta
 ".htmlentities($str)."</textarea></td></tr>
 </table></tr></td><tr>
 <td colspan=\"2\" style=\"text-align:center;\">
-Copyright &copy; Ballast Security 2012. All rights reserved</td></tr></table></form></body>
+Copyright &copy; fireBwall 2012. All rights reserved</td></tr></table></form></body>
 </html>
 ";
 ?>
