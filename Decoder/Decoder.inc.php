@@ -259,7 +259,6 @@ class Decoder
 							foreach($nmatches[1] as $index => $data)
 							{
 								$nname = preg_quote($name."(".$index.")");
-								print $nname." => ".base64_decode($data)."<br/>\n";
 								if($str !== preg_replace('/'.$nname.'/m', "'".base64_decode($data)."'", $str) && strstr(base64_decode($data), $nname) === false)
 								{
 									$done = false;
