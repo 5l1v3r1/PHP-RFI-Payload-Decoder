@@ -149,6 +149,19 @@ class Decoder
 		$variables = array();
 		while($done === FALSE)
 		{
+			if(preg_match_all("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", $str, $matches) != 0)
+			{
+				$count = count($matches[0]);
+				for($i = 0; $i < $count; $i++)
+				{
+					$value = $matches[2][$i];
+					if($str !== preg_replace("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", "'$1$2'", $str))
+					{
+						$done = false;
+						$str = preg_replace("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", "'$1$2'", $str);
+					}
+				}
+			}
 			if($this->Decode(array("gzinflate", "str_rot13", "base64_decode"), $str) ||
 				$this->Decode(array("gzuncompress", "str_rot13", "base64_decode"), $str) ||
 				$this->Decode(array("gzinflate", "str_rot13"), $str) ||
@@ -201,7 +214,7 @@ class Decoder
 							$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str);
 						}
 					}
-				}
+				}				
 			}
 			$this->ClearEmptyEvals($str);
 		}
@@ -213,6 +226,8 @@ class Decoder
 		{
 			if($payload->hash == $hash)
 			{
+				$payload->decodedPayload = $payload->rawPayload;
+				$this->AutoDecode($payload->decodedPayload);
 				return $payload;
 			}
 		}
