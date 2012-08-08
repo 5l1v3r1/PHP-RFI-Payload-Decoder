@@ -241,6 +241,33 @@ class Decoder
 							}
 						}
 					}
+				}
+				if($done === true && preg_match_all('/function[\s]+([^\(^\s]+)\(\$[^\)]+\)[\s]*{[\s]*\$[^\s^=]+[\s]*=[\s]*array\(([^\)]+)\);[\s]*return[\s]*base64_decode\(\$[^\)]+\);}/im', $str, $matches) != 0)
+				{
+					$count = count($matches[0]);
+					for($i = 0; $i < $count; $i++)
+					{
+						$name = $matches[1][$i];
+						if(in_array("function ".$name, $variables) === true)
+						{
+							continue;
+						}
+						array_push($variables, $name);
+						$value = $matches[2][$i];
+						if(preg_match_all("/'([^']*)'/im", $value, $nmatches) != 0)
+						{
+							foreach($nmatches[1] as $index => $data)
+							{
+								$nname = preg_quote($name."(".$index.")");
+								print $nname." => ".base64_decode($data)."<br/>\n";
+								if($str !== preg_replace('/'.$nname.'/m', "'".base64_decode($data)."'", $str) && strstr(base64_decode($data), $nname) === false)
+								{
+									$done = false;
+									$str = preg_replace('/'.$nname.'/m', "'".base64_decode($data)."'", $str);
+								}
+							}
+						}
+					}
 				}			
 			}
 			$this->ClearEmptyEvals($str);
