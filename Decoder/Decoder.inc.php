@@ -241,7 +241,7 @@ class Decoder
 							}
 						}
 					}
-				}
+				}				
 				if($done === true && preg_match_all('/function[\s]+([^\(^\s]+)\(\$[^\)]+\)[\s]*{[\s]*\$[^\s^=]+[\s]*=[\s]*array\(([^\)]+)\);[\s]*return[\s]*base64_decode\(\$[^\)]+\);}/im', $str, $matches) != 0)
 				{
 					$count = count($matches[0]);
@@ -267,7 +267,37 @@ class Decoder
 							}
 						}
 					}
-				}			
+				}
+
+				//Process specific functions
+				//round
+				if(preg_match_all('/round\(([0-9\+\.\-\s]+)\)/im', $str, $matches) != 0)
+				{
+					$count = count($matches[0]);
+					for($i = 0; $i < $count; $i++)
+					{
+						$value = eval("return round(".$matches[1][$i].");");
+						if($str !== preg_replace('/'.preg_quote($matches[0][$i]).'/mi', "$value", $str))
+						{
+							$done = false;
+							$str = preg_replace('/'.preg_quote($matches[0][$i]).'/mi', "$value", $str);
+						}
+					}
+				}
+				
+				//surrogate base64
+				if(preg_match_all('/function[\s]+([^\(^\s]+)\(\$[^\)]+\)[\s]*{[\s]*return[\s]*base64_decode\(\$[^\)]+\);}/im', $str, $matches) != 0)
+				{
+					$count = count($matches[0]);
+					for($i = 0; $i < $count; $i++)
+					{
+						if($str !== preg_replace('/'.preg_quote($matches[1][$i]).'\(/mi', "base64_decode(", $str))
+						{
+							$done = false;
+							$str = preg_replace('/'.preg_quote($matches[1][$i]).'\(/mi', "base64_decode(", $str);
+						}
+					}
+				}
 			}
 			$this->ClearEmptyEvals($str);
 		}
