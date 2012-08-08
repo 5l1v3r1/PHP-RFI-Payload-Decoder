@@ -149,6 +149,7 @@ class Decoder
 		$variables = array();
 		while($done === FALSE)
 		{
+			//concatenation
 			if(preg_match_all("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", $str, $matches) != 0)
 			{
 				$count = count($matches[0]);
@@ -161,7 +162,7 @@ class Decoder
 						$str = preg_replace("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", "'$1$2'", $str);
 					}
 				}
-			}
+			}			
 			if($this->Decode(array("gzinflate", "str_rot13", "base64_decode"), $str) ||
 				$this->Decode(array("gzuncompress", "str_rot13", "base64_decode"), $str) ||
 				$this->Decode(array("gzinflate", "str_rot13"), $str) ||
@@ -176,7 +177,7 @@ class Decoder
 			}
 			else
 			{
-				$done = true;
+				$done = true;				
 				if(preg_match_all('/(\$[[:alnum:]_]+)[[:space:]]*=[[:space:]]*("[^"]+");/s', $str, $matches) != 0)
 				{
 					$count = count($matches[0]);
@@ -214,7 +215,33 @@ class Decoder
 							$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str);
 						}
 					}
-				}				
+				}
+				if($done === true && preg_match_all('/\$([^\=^\s^\)^{]+)[\s]*\=[\s]*array\(([^\)]*)\)[\s]*\;/im', $str, $matches) != 0)
+				{
+					$count = count($matches[0]);
+					for($i = 0; $i < $count; $i++)
+					{
+						$name = $matches[1][$i];
+						if(in_array($name, $variables) === true)
+						{
+							continue;
+						}
+						array_push($variables, $name);
+						$value = $matches[2][$i];
+						if(preg_match_all("/'([^']*)'/im", $value, $nmatches) != 0)
+						{
+							foreach($nmatches[1] as $index => $data)
+							{
+								$nname = preg_quote($name."[".$index."]");
+								if($str !== preg_replace('/\$'.$nname.'/m', "$data", $str) && strstr($data, $nname) === false)
+								{
+									$done = false;
+									$str = preg_replace('/\$'.$nname.'/m', "$data", $str);
+								}
+							}
+						}
+					}
+				}			
 			}
 			$this->ClearEmptyEvals($str);
 		}
