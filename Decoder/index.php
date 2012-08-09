@@ -24,7 +24,7 @@ if($payload === false)
 }
 else
 {
-	$details = "URL: ".htmlentities($payload->origin);
+	$details = "URL: ".htmlentities($payload->origin)."<br/>Timestamp: ".htmlentities($payload->timestamp);
 	$decoded = htmlentities($payload->decodedPayload);
 	$original = htmlentities($payload->rawPayload);
 }

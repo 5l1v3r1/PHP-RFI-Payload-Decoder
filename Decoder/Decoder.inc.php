@@ -38,7 +38,12 @@ class Decoder
 			krsort($this->list);
 			foreach($this->list as $time => $payload)
 			{
-				$this->htmllist .= '<a href="?hash='.$payload->hash.'" title="'.htmlentities($payload->origin).'">'.$payload->timestamp.'</a><br/>';
+				$name = $payload->timestamp;
+				if(preg_match("/\/([^\/]+)$/", $payload->origin, $matches) != 0)
+				{
+					$name = htmlentities($matches[1]);
+				}
+				$this->htmllist .= '<a href="?hash='.$payload->hash.'" title="'.htmlentities($payload->origin).'">'.$name.'</a><br/>';
 			}
 		}
 	}
