@@ -248,7 +248,8 @@ class Decoder
 						}
 					}
 				}				
-				if($done === true && preg_match_all('/function[\s]+([^\(^\s]+)\(\$[^\)]+\)[\s]*{[\s]*\$[^\s^=]+[\s]*=[\s]*array\(([^\)]+)\);[\s]*return[\s]*base64_decode\(\$[^\)]+\);}/im', $str, $matches) != 0)
+				//Autocomputes a function that just does a base64 decode of an internal array and returns the results
+				if(preg_match_all('/function[\s]+([^\(^\s]+)\(\$[^\)]+\)[\s]*{[\s]*\$[^\s^=]+[\s]*=[\s]*array\(([^\)]+)\)[\s]*;[\s]*return[\s]+base64_decode\(\$[^\)]+\)[\s]*;[\s]*}/im', $str, $matches) != 0)
 				{
 					$count = count($matches[0]);
 					for($i = 0; $i < $count; $i++)
