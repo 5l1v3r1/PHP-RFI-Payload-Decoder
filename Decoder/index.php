@@ -35,10 +35,10 @@ else
 <html>
 <head>
 <title>PHP Decoder</title>
-<link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeEclipse.css" rel="stylesheet" type="text/css" />
-<script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
-<script src="http://alexgorbatchev.com/pub/sh/current/scripts/shAutoloader.js" type="text/javascript"></script>
-<script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushPhp.js" type="text/javascript"></script>
+<link href="shThemeEclipse.css" rel="stylesheet" type="text/css" />
+<script src="shCore.js" type="text/javascript"></script>
+<script src="shAutoloader.js" type="text/javascript"></script>
+<script src="shBrushPhp.js" type="text/javascript"></script>
 </head>
 <body>
 <table width="100%" height="100%" border="1"><tr><td colspan="2">
