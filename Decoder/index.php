@@ -33,6 +33,13 @@ else
 
 <!DOCTYPE html>
 <html>
+<head>
+<title>PHP Decoder</title>
+<link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeEclipse.css" rel="stylesheet" type="text/css" />
+<script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
+<script src="http://alexgorbatchev.com/pub/sh/current/scripts/shAutoloader.js" type="text/javascript"></script>
+<script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushPhp.js" type="text/javascript"></script>
+</head>
 <body>
 <table width="100%" height="100%" border="1"><tr><td colspan="2">
 <h1>PHP Decoder</h1><form action="index.php" method="post"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KCHYQRCBZEWML">Donate</a> - 
@@ -48,11 +55,14 @@ else
 <td style="width:100%;text-align:top;">
 <?php print $details; ?>
 <p>Decoded</p>
-<textarea style="width:100%;height:400px;"><?php print $decoded;?></textarea>
+<pre class="brush: php"><?php print $decoded;?></pre>
 <p>Raw</p>
 <textarea style="width:100%;height:400px;"><?php print $original;?></textarea></td>
 </tr>
 </table></tr></td><tr>
+<script type="text/javascript">
+     SyntaxHighlighter.all()
+</script>
 <td colspan="2" style="text-align:center;">
 Copyright &copy; fireBwall 2012. All rights reserved</td></tr></table></body>
 </html>

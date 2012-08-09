@@ -77,6 +77,7 @@ class Decoder
 	
 	function ExpandLines($str)
 	{
+		$str = preg_replace("/;([^\n])/", ";\n$1", $str);
 		return $str;
 	}
 	
@@ -304,8 +305,34 @@ class Decoder
 					}
 				}
 			}
-			$this->ClearEmptyEvals($str);
+			$this->ClearEmptyEvals($str);			
 		}
+		
+		$str = $this->ExpandLines($str);
+		
+		$varCount = 0;
+		$variables = array();
+		if(preg_match_all('/(\$[[:alnum:]_]+)/', $str, $matches) != 0)
+		{
+			$count = count($matches[0]);
+			for($i = 0; $i < $count; $i++)
+			{
+				$name = $matches[1][$i];
+				if(in_array($name, $variables) === true)
+				{
+					continue;
+				}
+				$value = "\$var_".$varCount;				
+				if($str !== preg_replace('/('.preg_quote($name).')([^[:alnum:]^_])/m', "$value$2", $str) && strstr($value, $name) === false)
+				{
+					$done = false;
+					array_push($variables, $name);
+					array_push($variables, $value);
+					$str = preg_replace('/('.preg_quote($name).')([^[:alnum:]^_])/m', "$value$2", $str);
+					$varCount++;
+				}
+			}
+		}		
 	}
 	
 	public function DecodeFromHash($hash)
