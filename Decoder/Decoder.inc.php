@@ -175,10 +175,10 @@ class Decoder
 				for($i = 0; $i < $count; $i++)
 				{
 					$value = $matches[2][$i];
-					if($str !== preg_replace("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", "'$1$2'", $str))
+					if($str !== preg_replace("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", "\"$1$2\"", $str))
 					{
 						$done = false;
-						$str = preg_replace("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", "'$1$2'", $str);
+						$str = preg_replace("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", "\"$1$2\"", $str);
 					}
 				}
 			}		
