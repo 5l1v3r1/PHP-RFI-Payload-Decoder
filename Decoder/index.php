@@ -56,8 +56,7 @@ else
 <?php print $details; ?>
 <p>Decoded</p>
 <pre class="brush: php"><?php print $decoded;?></pre>
-<p>Raw</p>
-<textarea style="width:100%;height:400px;"><?php print $original;?></textarea></td>
+</td>
 </tr>
 </table></tr></td><tr>
 <script type="text/javascript">
