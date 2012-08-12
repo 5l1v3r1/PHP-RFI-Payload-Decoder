@@ -95,6 +95,65 @@ class Decoder
 		}
 	}
 	
+	function Concatenate($str)
+	{
+		if(preg_match_all("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", $str, $matches) != 0)
+		{
+			$count = count($matches[0]);
+			for($i = 0; $i < $count; $i++)
+			{
+				$value = $matches[2][$i];
+				if($str !== preg_replace("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", "'$1$2'", $str))
+				{
+					$str = preg_replace("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", "'$1$2'", $str);
+				}
+			}
+		}
+		if(preg_match_all("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", $str, $matches) != 0)
+		{
+			$count = count($matches[0]);
+			for($i = 0; $i < $count; $i++)
+			{
+				$value = $matches[2][$i];
+				if($str !== preg_replace("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", "\"$1$2\"", $str))
+				{
+					$str = preg_replace("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", "\"$1$2\"", $str);
+				}
+			}
+		}
+		return $str;
+	}
+	
+	function Unescape($data)
+	{
+		if(preg_match_all('/'.preg_quote('\x').'([a-fA-F0-9][a-fA-F0-9])/', $data, $matches) != 0)
+		{
+			$count = count($matches[0]);
+			for($i = 0; $i < $count; $i++)
+			{
+				$value = hexdec($matches[1][$i]);
+				if($data !== preg_replace('/'.preg_quote('\x').$matches[1][$i]."/", chr($value), $data))
+				{
+					$data = preg_replace('/'.preg_quote('\x').$matches[1][$i]."/", chr($value), $data);
+				}
+			}
+		}
+		
+		if(preg_match_all('/'.preg_quote('\\').'([0-9][0-9]?[0-9]?)/', $data, $matches) != 0)
+		{
+			$count = count($matches[0]);
+			for($i = 0; $i < $count; $i++)
+			{
+				$value = octdec($matches[1][$i]);
+				if($data !== preg_replace('/'.preg_quote('\\').$matches[1][$i]."/", chr($value), $data))
+				{
+					$data = preg_replace('/'.preg_quote('\\').$matches[1][$i]."/", chr($value), $data);
+				}
+			}
+		}
+		return $data;
+	}
+	
 	function Decode($funcArray, &$str)
 	{
 		$count = count($funcArray);
@@ -112,7 +171,7 @@ class Decoder
 		$endEval .= ";";
 		if(preg_match('/'.$funcs.'(?<data>"[^"]+")'.$tail.'/m', $str, $matches))
 		{
-			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".$toEval.$matches["data"].$endEval))."'", $str);
+			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace('"', "", $toEval).$matches["data"].$endEval))."'", $str);
 			return true;
 		}
 		else if(preg_match('/'.$funcs.'(?<data>\'[^\']+\')'.$tail.'/m', $str, $matches))
@@ -156,32 +215,7 @@ class Decoder
 		while($done === FALSE)
 		{
 			//concatenation
-			if(preg_match_all("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", $str, $matches) != 0)
-			{
-				$count = count($matches[0]);
-				for($i = 0; $i < $count; $i++)
-				{
-					$value = $matches[2][$i];
-					if($str !== preg_replace("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", "'$1$2'", $str))
-					{
-						$done = false;
-						$str = preg_replace("/'([^']*)'[\s]*\.[\s]*'([^']*)'/", "'$1$2'", $str);
-					}
-				}
-			}	
-			if(preg_match_all("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", $str, $matches) != 0)
-			{
-				$count = count($matches[0]);
-				for($i = 0; $i < $count; $i++)
-				{
-					$value = $matches[2][$i];
-					if($str !== preg_replace("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", "\"$1$2\"", $str))
-					{
-						$done = false;
-						$str = preg_replace("/\"([^\"]*)\"[\s]*\.[\s]*\"([^\"]*)\"/", "\"$1$2\"", $str);
-					}
-				}
-			}		
+			$str = $this->Concatenate($str);						
 			if($this->Decode(array("gzinflate", "str_rot13", "base64_decode"), $str) ||
 				$this->Decode(array("gzuncompress", "str_rot13", "base64_decode"), $str) ||
 				$this->Decode(array("gzinflate", "str_rot13"), $str) ||
@@ -191,12 +225,29 @@ class Decoder
 				$this->Decode(array("base64_decode"), $str) ||
 				$this->Decode(array("gzinflate", "str_rot13"), $str) ||
 				$this->Decode(array("gzinflate", "base64_decode", "str_rot13"), $str) ||
-				$this->Decode(array("base64_decode", "str_rot13"), $str))
+				$this->Decode(array("base64_decode", "str_rot13"), $str) ||
+				$this->Decode(array('"base64_decode"'), $str))
 			{
 			}
 			else
 			{
-				$done = true;				
+				$done = true;
+				while(preg_match_all('/(\$[[:alnum:]_]+)[[:space:]]*\.=[[:space:]]*("[^;]+);/s', $str, $matches) != 0)
+				{
+					$count = count($matches[0]);
+					for($i = 0; $i < $count; $i++)
+					{
+						$name = $matches[1][$i];
+						if(preg_match_all('/('.preg_quote($name).')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
+						{
+							$value = $this->Unescape($m[2][count($m[2]) - 1]).".".$this->Unescape($matches[2][$i]);
+							$value = $this->Concatenate($value);
+							$value = $this->Unescape($value);
+							$str = preg_replace('/'.preg_quote($matches[0][$i]).'/', $matches[1][$i]." = ".$value.";", $str, 1);
+							$done = false;							
+						}
+					}
+				}				
 				if(preg_match_all('/(\$[[:alnum:]_]+)[[:space:]]*=[[:space:]]*("[^"]+");/s', $str, $matches) != 0)
 				{
 					$count = count($matches[0]);
@@ -207,12 +258,15 @@ class Decoder
 						{
 							continue;
 						}
-						$value = $matches[2][$i];
-						if($str !== preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str) && strstr($value, $name) === false)
+						if(preg_match_all('/('.preg_quote($name).')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
 						{
-							$done = false;
-							array_push($variables, $name);
-							$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str);
+							$value = $m[2][count($m[2]) - 1];							
+							if($str !== preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', preg_quote($value)."$2", $str) && strstr($value, $name) === false)
+							{
+								$done = false;
+								array_push($variables, $name);
+								$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', preg_quote($value)."$2", $str);
+							}
 						}
 					}
 				}
@@ -227,15 +281,15 @@ class Decoder
 							continue;
 						}
 						$value = $matches[2][$i];
-						if($str !== preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str) && strstr($value, $name) === false)
+						if($str !== preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', preg_quote($value)."$2", $str) && strstr($value, $name) === false)
 						{
 							$done = false;
 							array_push($variables, $name);
-							$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', "$value$2", $str);
+							$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', preg_quote($value)."$2", $str);
 						}
 					}
 				}
-				if($done === true && preg_match_all('/\$([^\=^\s^\)^{]+)[\s]*\=[\s]*array\(([^\)]*)\)[\s]*\;/im', $str, $matches) != 0)
+				if(preg_match_all('/\$([^\=^\s^\)^{]+)[\s]*\=[\s]*array\(([^\)]*)\)[\s]*\;/im', $str, $matches) != 0)
 				{
 					$count = count($matches[0]);
 					for($i = 0; $i < $count; $i++)
@@ -252,10 +306,10 @@ class Decoder
 							foreach($nmatches[1] as $index => $data)
 							{
 								$nname = preg_quote($name."[".$index."]");
-								if($str !== preg_replace('/\$'.$nname.'/m', "$data", $str) && strstr($data, $nname) === false)
+								if($str !== preg_replace('/\$'.$nname.'/m', $data, $str) && strstr($data, $nname) === false)
 								{
 									$done = false;
-									$str = preg_replace('/\$'.$nname.'/m', "$data", $str);
+									$str = preg_replace('/\$'.$nname.'/m', $data, $str);
 								}
 							}
 						}
@@ -301,6 +355,32 @@ class Decoder
 						{
 							$done = false;
 							$str = preg_replace('/'.preg_quote($matches[0][$i]).'/mi', "$value", $str);
+						}
+					}
+				}
+
+				if(preg_match_all('/'.preg_quote('\x').'([a-fA-F0-9][a-fA-F0-9])/', $str, $matches) != 0)
+				{
+					for($i = 0; $i < $count; $i++)
+					{
+						$value = hexdec($matches[1][$i]);
+						if($str !== preg_replace('/'.preg_quote('\x').$matches[1][$i]."/", chr($value), $str))
+						{
+							$done = false;
+							$str = preg_replace('/'.preg_quote('\x').$matches[1][$i]."/", chr($value), $str);
+						}
+					}
+				}
+				
+				if(preg_match_all('/'.preg_quote('\\').'([0-9][0-9]?[0-9]?)/', $str, $matches) != 0)
+				{
+					for($i = 0; $i < $count; $i++)
+					{
+						$value = octdec($matches[1][$i]);
+						if($str !== preg_replace('/'.preg_quote('\\').$matches[1][$i]."/", chr($value), $str))
+						{
+							$done = false;
+							$str = preg_replace('/'.preg_quote('\\').$matches[1][$i]."/", chr($value), $str);
 						}
 					}
 				}
