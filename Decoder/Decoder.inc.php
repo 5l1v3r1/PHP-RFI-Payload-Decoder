@@ -139,7 +139,7 @@ class Decoder
 			}
 		}
 		
-		if(preg_match_all('/'.preg_quote('\\').'([0-9][0-9]?[0-9]?)/', $data, $matches) != 0)
+		if(preg_match_all('/'.preg_quote('\\').'([0-7][0-7]?[0-7]?)/', $data, $matches) != 0)
 		{
 			$count = count($matches[0]);
 			for($i = 0; $i < $count; $i++)
@@ -171,32 +171,32 @@ class Decoder
 		$endEval .= ";";
 		if(preg_match('/'.$funcs.'(?<data>"[^"]+")'.$tail.'/m', $str, $matches))
 		{
-			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace('"', "", $toEval).$matches["data"].$endEval))."'", $str);
+			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
 			return true;
 		}
 		else if(preg_match('/'.$funcs.'(?<data>\'[^\']+\')'.$tail.'/m', $str, $matches))
 		{
-			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".$toEval.$matches["data"].$endEval))."'", $str);
+			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
 			return true;
 		}
 		else if(preg_match('/'.$funcs.'(?<data>\'[^\']+\')/m', $str, $matches))
 		{
-			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".$toEval.$matches["data"].$endEval))."'", $str);
+			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
 			return true;
 		}
 		else if(preg_match('/'.$funcs.'(?<data>"[^"]+")/m', $str, $matches))
 		{
-			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".$toEval.$matches["data"].$endEval))."'", $str);
+			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
 			return true;
 		}
 		else if(preg_match('/'.$funcs.'(?<data>"[^"]+)/m', $str, $matches))
 		{
-			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".$toEval.$matches["data"].'"'.$endEval))."'", $str);
+			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].'"'.$endEval))."'", $str);
 			return true;
 		}
 		else if(preg_match('/'.$funcs.'(?<data>\'[^\']+)/m', $str, $matches))
 		{
-			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".$toEval.$matches["data"]."'".$endEval))."'", $str);
+			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"]."'".$endEval))."'", $str);
 			return true;
 		}
 		else
@@ -215,24 +215,28 @@ class Decoder
 		while($done === FALSE)
 		{
 			//concatenation
-			$str = $this->Concatenate($str);						
-			if($this->Decode(array("gzinflate", "str_rot13", "base64_decode"), $str) ||
-				$this->Decode(array("gzuncompress", "str_rot13", "base64_decode"), $str) ||
-				$this->Decode(array("gzinflate", "str_rot13"), $str) ||
-				$this->Decode(array("gzuncompress", "str_rot13"), $str) ||
-				$this->Decode(array("gzinflate", "base64_decode"), $str) ||
-				$this->Decode(array("gzuncompress", "base64_decode"), $str) ||
-				$this->Decode(array("base64_decode"), $str) ||
-				$this->Decode(array("gzinflate", "str_rot13"), $str) ||
-				$this->Decode(array("gzinflate", "base64_decode", "str_rot13"), $str) ||
-				$this->Decode(array("base64_decode", "str_rot13"), $str) ||
-				$this->Decode(array('"base64_decode"'), $str))
+			$str = $this->Concatenate($str);
+			if($this->Decode(array("gzinflate", "str_rot13", "base64_decode"), $str)
+				|| $this->Decode(array("gzuncompress", "str_rot13", "base64_decode"), $str)
+				|| $this->Decode(array("gzinflate", "base64_decode", "str_rot13"), $str)
+				|| $this->Decode(array('"gzinflate"', '"base64_decode"', '"str_rot13"'), $str)
+				|| $this->Decode(array("gzinflate", "str_rot13"), $str)
+				|| $this->Decode(array("gzuncompress", "str_rot13"), $str)
+				|| $this->Decode(array("gzinflate", "base64_decode"), $str)
+				|| $this->Decode(array('"gzinflate"', '"base64_decode"'), $str)
+				|| $this->Decode(array("gzuncompress", "base64_decode"), $str)
+				|| $this->Decode(array("base64_decode"), $str)
+				|| $this->Decode(array("gzinflate", "str_rot13"), $str)								
+				|| $this->Decode(array("base64_decode", "str_rot13"), $str)
+				|| $this->Decode(array('"base64_decode"'), $str) 
+				|| $this->Decode(array("'base64_decode'"), $str)
+					)
 			{
 			}
 			else
 			{
 				$done = true;
-				while(preg_match_all('/(\$[[:alnum:]_]+)[[:space:]]*\.=[[:space:]]*("[^;]+);/s', $str, $matches) != 0)
+				if(preg_match_all('/(\$[[:alnum:]_]+)[[:space:]]*\.=[[:space:]]*("[^;]+);/s', $str, $matches) != 0)
 				{
 					$count = count($matches[0]);
 					for($i = 0; $i < $count; $i++)
@@ -359,31 +363,11 @@ class Decoder
 					}
 				}
 
-				if(preg_match_all('/'.preg_quote('\x').'([a-fA-F0-9][a-fA-F0-9])/', $str, $matches) != 0)
+				if($str != $this->Unescape($str))
 				{
-					for($i = 0; $i < $count; $i++)
-					{
-						$value = hexdec($matches[1][$i]);
-						if($str !== preg_replace('/'.preg_quote('\x').$matches[1][$i]."/", chr($value), $str))
-						{
-							$done = false;
-							$str = preg_replace('/'.preg_quote('\x').$matches[1][$i]."/", chr($value), $str);
-						}
-					}
-				}
-				
-				if(preg_match_all('/'.preg_quote('\\').'([0-9][0-9]?[0-9]?)/', $str, $matches) != 0)
-				{
-					for($i = 0; $i < $count; $i++)
-					{
-						$value = octdec($matches[1][$i]);
-						if($str !== preg_replace('/'.preg_quote('\\').$matches[1][$i]."/", chr($value), $str))
-						{
-							$done = false;
-							$str = preg_replace('/'.preg_quote('\\').$matches[1][$i]."/", chr($value), $str);
-						}
-					}
-				}
+					$done = false;
+					$str = $this->Unescape($str);
+				}				
 				
 				//surrogate base64
 				if(preg_match_all('/function[\s]+([^\(^\s]+)\(\$[^\)]+\)[\s]*{[\s]*return[\s]*base64_decode\(\$[^\)]+\);}/im', $str, $matches) != 0)
