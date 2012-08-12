@@ -247,7 +247,7 @@ class Decoder
 							$value = $this->Unescape($m[2][count($m[2]) - 1]).".".$this->Unescape($matches[2][$i]);
 							$value = $this->Concatenate($value);
 							$value = $this->Unescape($value);
-							$str = preg_replace('/'.preg_quote($matches[0][$i], '/').'/', preg_quote($matches[1][$i]." = ".$value.";", '/'), $str, 1);
+							$str = preg_replace('/'.preg_quote($matches[0][$i], '/').'/', $matches[1][$i]." = ".$value.";", $str, 1);
 							$done = false;							
 						}
 					}
