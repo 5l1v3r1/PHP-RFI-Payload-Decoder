@@ -126,28 +126,28 @@ class Decoder
 	
 	function Unescape($data)
 	{
-		if(preg_match_all('/'.preg_quote('\x').'([a-fA-F0-9][a-fA-F0-9])/', $data, $matches) != 0)
+		if(preg_match_all('/'.preg_quote('\x', '/').'([a-fA-F0-9][a-fA-F0-9])/', $data, $matches) != 0)
 		{
 			$count = count($matches[0]);
 			for($i = 0; $i < $count; $i++)
 			{
 				$value = hexdec($matches[1][$i]);
-				if($data !== preg_replace('/'.preg_quote('\x').$matches[1][$i]."/", chr($value), $data))
+				if($data !== preg_replace('/'.preg_quote('\x', '/').$matches[1][$i]."/", chr($value), $data))
 				{
-					$data = preg_replace('/'.preg_quote('\x').$matches[1][$i]."/", chr($value), $data);
+					$data = preg_replace('/'.preg_quote('\x', '/').$matches[1][$i]."/", chr($value), $data);
 				}
 			}
 		}
 		
-		if(preg_match_all('/'.preg_quote('\\').'([0-7][0-7]?[0-7]?)/', $data, $matches) != 0)
+		if(preg_match_all('/'.preg_quote('\\', '/').'([0-7][0-7]?[0-7]?)/', $data, $matches) != 0)
 		{
 			$count = count($matches[0]);
 			for($i = 0; $i < $count; $i++)
 			{
 				$value = octdec($matches[1][$i]);
-				if($data !== preg_replace('/'.preg_quote('\\').$matches[1][$i]."/", chr($value), $data))
+				if($data !== preg_replace('/'.preg_quote('\\', '/').$matches[1][$i]."/", chr($value), $data))
 				{
-					$data = preg_replace('/'.preg_quote('\\').$matches[1][$i]."/", chr($value), $data);
+					$data = preg_replace('/'.preg_quote('\\', '/').$matches[1][$i]."/", chr($value), $data);
 				}
 			}
 		}
@@ -242,12 +242,12 @@ class Decoder
 					for($i = 0; $i < $count; $i++)
 					{
 						$name = $matches[1][$i];
-						if(preg_match_all('/('.preg_quote($name).')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
+						if(preg_match_all('/('.preg_quote($name, '/').')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
 						{
 							$value = $this->Unescape($m[2][count($m[2]) - 1]).".".$this->Unescape($matches[2][$i]);
 							$value = $this->Concatenate($value);
 							$value = $this->Unescape($value);
-							$str = preg_replace('/'.preg_quote($matches[0][$i]).'/', $matches[1][$i]." = ".$value.";", $str, 1);
+							$str = preg_replace('/'.preg_quote($matches[0][$i], '/').'/', preg_quote($matches[1][$i]." = ".$value.";", '/'), $str, 1);
 							$done = false;							
 						}
 					}
@@ -262,14 +262,14 @@ class Decoder
 						{
 							continue;
 						}
-						if(preg_match_all('/('.preg_quote($name).')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
+						if(preg_match_all('/('.preg_quote($name, '/').')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
 						{
 							$value = $m[2][count($m[2]) - 1];							
-							if($str !== preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', preg_quote($value)."$2", $str) && strstr($value, $name) === false)
+							if($str !== preg_replace('/('.preg_quote($name, '/').')([^<>[:alnum:]_ \=])/m', preg_quote($value, '/')."$2", $str) && strstr($value, $name) === false)
 							{
 								$done = false;
 								array_push($variables, $name);
-								$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', preg_quote($value)."$2", $str);
+								$str = preg_replace('/('.preg_quote($name, '/').')([^<>[:alnum:]_ \=])/m', preg_quote($value, '/')."$2", $str);
 							}
 						}
 					}
