@@ -264,12 +264,12 @@ class Decoder
 						}
 						if(preg_match_all('/('.preg_quote($name, '/').')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
 						{
-							$value = $m[2][count($m[2]) - 1];							
-							if($str !== preg_replace('/('.preg_quote($name, '/').')([^<>[:alnum:]_ \=])/m', preg_quote($value, '/')."$2", $str) && strstr($value, $name) === false)
+							$value = $this->Unescape($m[2][count($m[2]) - 1]);							
+							if($str !== preg_replace('/('.preg_quote($name, '/').')([^<>[:alnum:]_ \=])/m', $value."$2", $str) && strstr($value, $name) === false)
 							{
 								$done = false;
 								array_push($variables, $name);
-								$str = preg_replace('/('.preg_quote($name, '/').')([^<>[:alnum:]_ \=])/m', preg_quote($value, '/')."$2", $str);
+								$str = preg_replace('/('.preg_quote($name, '/').')([^<>[:alnum:]_ \=])/m', $value."$2", $str);
 							}
 						}
 					}
@@ -284,12 +284,15 @@ class Decoder
 						{
 							continue;
 						}
-						$value = $matches[2][$i];
-						if($str !== preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', preg_quote($value)."$2", $str) && strstr($value, $name) === false)
+						if(preg_match_all('/('.preg_quote($name, '/').')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
 						{
-							$done = false;
-							array_push($variables, $name);
-							$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', preg_quote($value)."$2", $str);
+							$value = $this->Unescape($m[2][count($m[2]) - 1]);
+							if($str !== preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', $value."$2", $str) && strstr($value, $name) === false)
+							{
+								$done = false;
+								array_push($variables, $name);
+								$str = preg_replace('/('.preg_quote($name).')([^<>[:alnum:]_ \=])/m', $value."$2", $str);
+							}
 						}
 					}
 				}
