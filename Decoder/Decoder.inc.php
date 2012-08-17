@@ -460,8 +460,18 @@ class Decoder
 		return false;
 	}
 	
+	function startsWith($haystack, $needle)
+	{
+		$length = strlen($needle);
+		return (substr($haystack, 0, $length) === $needle);
+	}
+	
 	public function DecodeFromUrl($url)
 	{
+		if(!($this->startsWith($url, "http://") || $this->startsWith($url, "ftp://") || $this->startsWith($url, "https://")))
+		{
+			$url = "http://".$url;
+		}
 		$str = "";
 		$hash = md5($url);
 		foreach($this->list as $time => $payload)
