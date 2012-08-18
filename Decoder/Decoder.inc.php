@@ -230,13 +230,14 @@ class Decoder
 				|| $this->Decode(array("base64_decode", "str_rot13"), $str)
 				|| $this->Decode(array('"base64_decode"'), $str) 
 				|| $this->Decode(array("'base64_decode'"), $str)
+				|| $this->Decode(array("urldecode"), $str)
 					)
 			{
 			}
 			else
 			{
 				$done = true;
-				if(preg_match_all('/(\$[[:alnum:]_]+)[[:space:]]*\.=[[:space:]]*("[^;]+);/s', $str, $matches) != 0)
+				if(preg_match_all('/(\$[[:alnum:]_]+)[[:space:]]*\.=[[:space:]]*([^;]+);/s', $str, $matches) != 0)
 				{
 					$count = count($matches[0]);
 					for($i = 0; $i < $count; $i++)
@@ -322,6 +323,42 @@ class Decoder
 						}
 					}
 				}				
+				if(preg_match_all("/\'(?<string>[^\']+)\'{(?<index>[0-9]+)}/", $str, $matches) != 0)
+				{
+					$count = count($matches[0]);
+					for($i = 0; $i < $count; $i++)
+					{
+						$value = $matches['string'][$i]{$matches['index'][$i]};
+						if($str !== preg_replace('/'.preg_quote($matches[0][$i]).'/mi', "'$value'", $str))
+						{
+							$done = false;
+							$str = preg_replace('/'.preg_quote($matches[0][$i]).'/mi', "'$value'", $str);
+						}
+					}
+				}
+				
+				if(preg_match_all('/(\$[^\=^\s^\)^{]+){(?<index>[0-9]+)}/', $str, $matches) != 0)
+				{
+					$count = count($matches[0]);
+					for($i = 0; $i < $count; $i++)
+					{
+						$name = $matches[1][$i];
+						if(preg_match_all('/('.preg_quote($name, '/').')[[:space:]]*=[[:space:]]*\'([^\']+)\'[^\s]*;/s', $str, $m) != 0)
+						{
+							if($matches['index'][$i] > strlen($m[2][count($m[2]) - 1]))
+							{
+								continue;
+							}
+							$value = $m[2][count($m[2]) - 1]{$matches['index'][$i]};
+							if($str !== preg_replace('/'.preg_quote($matches[0][$i]).'/mi', "'$value'", $str))
+							{
+								$done = false;
+								$str = preg_replace('/'.preg_quote($matches[0][$i]).'/mi', "'$value'", $str);
+							}
+						}
+					}
+				}
+				
 				//Autocomputes a function that just does a base64 decode of an internal array and returns the results
 				if(preg_match_all('/function[\s]+([^\(^\s]+)\(\$[^\)]+\)[\s]*{[\s]*\$[^\s^=]+[\s]*=[\s]*array\(([^\)]+)\)[\s]*;[\s]*return[\s]+base64_decode\(\$[^\)]+\)[\s]*;[\s]*}/im', $str, $matches) != 0)
 				{
