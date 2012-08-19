@@ -243,7 +243,7 @@ class Decoder
 					for($i = 0; $i < $count; $i++)
 					{
 						$name = $matches[1][$i];
-						if(preg_match_all('/('.preg_quote($name, '/').')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
+						if(strlen($matches[0][$i]) < 50000 && preg_match_all('/('.preg_quote($name, '/').')[[:space:]]*=[[:space:]]*([^;]+);/s', $str, $m) != 0)
 						{
 							$value = $this->Unescape($m[2][count($m[2]) - 1]).".".$this->Unescape($matches[2][$i]);
 							$value = $this->Concatenate($value);
