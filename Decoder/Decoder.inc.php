@@ -199,6 +199,11 @@ class Decoder
 			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"]."'".$endEval))."'", $str);
 			return true;
 		}
+		else if(preg_match('/'.$funcs.'(?<data>[a-zA-Z0-9\+\/\=]+)'.$tail.'/m', $str, $matches))
+		{
+			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
+			return true;
+		}
 		else
 		{
 			return false;
