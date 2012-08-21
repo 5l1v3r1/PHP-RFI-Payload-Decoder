@@ -169,7 +169,7 @@ class Decoder
 			$endEval .= ")";
 		}
 		$endEval .= ";";
-		if(preg_match('/'.$funcs.'(?<data>"[^"]+")'.$tail.'/m', $str, $matches))
+		if(preg_match('/'.$funcs.'(?<data>"[^"]+")'.$tail.'/mi', $str, $matches))
 		{
 			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
 			return true;
@@ -179,29 +179,29 @@ class Decoder
 			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
 			return true;
 		}
-		else if(preg_match('/'.$funcs.'(?<data>\'[^\']+\')/m', $str, $matches))
+		else if(preg_match('/'.$funcs.'(?<data>\'[^\']+\')/mi', $str, $matches))
 		{
 			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
 			return true;
 		}
-		else if(preg_match('/'.$funcs.'(?<data>"[^"]+")/m', $str, $matches))
+		else if(preg_match('/'.$funcs.'(?<data>"[^"]+")/mi', $str, $matches))
 		{
 			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
 			return true;
 		}
-		else if(preg_match('/'.$funcs.'(?<data>"[^"]+)/m', $str, $matches))
+		else if(preg_match('/'.$funcs.'(?<data>"[^"]+)/mi', $str, $matches))
 		{
 			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].'"'.$endEval))."'", $str);
 			return true;
 		}
-		else if(preg_match('/'.$funcs.'(?<data>\'[^\']+)/m', $str, $matches))
+		else if(preg_match('/'.$funcs.'(?<data>\'[^\']+)/mi', $str, $matches))
 		{
 			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"]."'".$endEval))."'", $str);
 			return true;
 		}
-		else if(preg_match('/'.$funcs.'(?<data>[a-zA-Z0-9\+\/\=]+)'.$tail.'/m', $str, $matches))
+		else if(preg_match('/'.$funcs.'(?<data>[a-zA-Z0-9\+\/\=]+)'.$tail.'/mi', $str, $matches))
 		{
-			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval)).$matches["data"].$endEval))."'", $str);
+			$str = str_replace($matches[0], "'".$this->ExpandLines(eval("return ".str_replace("'", "", str_replace('"', "", $toEval))."'".$matches["data"]."'".$endEval))."'", $str);
 			return true;
 		}
 		else
