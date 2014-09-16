@@ -427,6 +427,20 @@ class Decoder
 						}
 					}
 				}
+
+				// pack('H*', '')
+				if(preg_match_all("/pack[\s]*\([\s]*['\"]H\*['\"][\s]*,[\s]*['\"]([^'\"]*)['\"][\s]*\)/i", $str, $matches) != 0)
+				{
+					$count = count($matches[0]);
+					for($i = 0; $i < $count; $i++)
+					{
+						if($str !== str_replace($matches[0][$i], '"' . pack("H*", $matches[1][$i]) . '"', $str))
+						{
+							$done = false;
+							$str = str_replace($matches[0][$i], '"' . pack("H*", $matches[1][$i]) . '"', $str);
+						}
+					}
+				}
 			}
 			$this->ClearEmptyEvals($str);			
 		}
